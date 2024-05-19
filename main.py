@@ -33,15 +33,14 @@ def make_undirected_matrix():
                 undirected_matrix[j][i] = 1
     return undirected_matrix
 
-def print_matrices():
+def print_matrix():
     undirected = make_undirected_matrix()
     print("\nUndirected Matrix:")
     for row in undirected:
         print(row)
 
 
-print_matrices()
-
+print_matrix()
 
 def draw_vertex(x, y, number):
     turtle.penup()
@@ -57,7 +56,14 @@ def draw_vertex(x, y, number):
     turtle.write(number, align="center", font=("Arial", 18, "bold"))
 
 def loop(x1, y1):
-    turtle.goto(x1, y1 - 20)
+    if x1 == 225:
+        turtle.goto(x1 + 35, y1 + 15)
+    if x1 == -225:
+        turtle.goto(x1 - 35, y1 + 15)
+    if y1 == -225:
+        turtle.goto(x1, y1 - 20)
+    if y1 == 225:
+        turtle.goto(x1, y1 + 20)
     turtle.setheading(180)
     turtle.pendown()
     turtle.circle(15)
@@ -151,11 +157,17 @@ def make_weight_matrix():
     d = [[1 if c[i][j] > 0 else 0 for j in range(NUM_VERTICES)] for i in range(NUM_VERTICES)]
     h = [[1 if d[i][j] != d[j][i] else 0 for j in range(NUM_VERTICES)] for i in range(NUM_VERTICES)]
     tr = [[1 if i < j else 0 for j in range(NUM_VERTICES)] for i in range(NUM_VERTICES)]
-    w = [[(d[i][j] + h[i][j] * tr[i][j]) * c[i][j] for j in range(NUM_VERTICES)] for i in range(NUM_VERTICES)]
+
+    w_matrix = [[0] * NUM_VERTICES for _ in range(NUM_VERTICES)]
+    for i in range(NUM_VERTICES):
+        for j in range(NUM_VERTICES):
+            w_matrix[i][j] = (d[i][j] + (h[i][j] * tr[i][j])) * c[i][j]
+            w_matrix[j][i] = w_matrix[i][j]
+
     print("\nMatrix W:")
-    for row in w:
+    for row in w_matrix:
         print(row)
-    return w
+    return w_matrix
 
 def calculate_min_spanning_tree_weight(min_spanning_tree, weight_matrix):
     total_weight = 0

@@ -7,6 +7,7 @@ SEED = 3223
 NUM_VERTICES = 12
 K = 0.915
 drawn_edges = set()
+
 def generate_matrix():
     random.seed(SEED)
     matrix = [[random.random() * 2 for _ in range(NUM_VERTICES)] for _ in range(NUM_VERTICES)]
@@ -55,15 +56,15 @@ def draw_vertex(x, y, number):
     turtle.color("black")
     turtle.write(number, align="center", font=("Arial", 18, "bold"))
 
+
 def loop(x1, y1):
-    if x1 == 225:
-        turtle.goto(x1 + 35, y1 + 15)
-    if x1 == -225:
+    if x1 == -225 and y1 == 225:
         turtle.goto(x1 - 35, y1 + 15)
-    if y1 == -225:
+    elif x1 == -225 and y1 != 225:
+        turtle.goto(x1 - 35, y1 + 15)
+    elif y1 == -225:
         turtle.goto(x1, y1 - 20)
-    if y1 == 225:
-        turtle.goto(x1, y1 + 20)
+
     turtle.setheading(180)
     turtle.pendown()
     turtle.circle(15)
@@ -103,12 +104,12 @@ def draw_normal_edge(x1, y1, x2, y2):
 
 def draw_edge(x1, y1, x2, y2, i, j, weight):
     if weight:
-        mid_x = (x1 + x2) / 2
-        mid_y = (y1 + y2) / 2
+        mid_x = (((x1 + x2) / 2) + x1) / 2
+        mid_y = (((y1 + y2) / 2) + y1) / 2
         turtle.penup()
-        turtle.goto(mid_x+10, mid_y+10)
+        turtle.goto(mid_x, mid_y)
         turtle.color('Dark blue')
-        turtle.write(weight, align="center", font=("Arial", 15, "normal"))
+        turtle.write(weight, align="center", font=("Arial", 16, "normal"))
         turtle.penup()
         turtle.color('Magenta')
 
@@ -169,6 +170,49 @@ def make_weight_matrix():
         print(row)
     return w_matrix
 
+class Node:
+    def __init__(self, vertex, weight):
+        self.vertex = vertex
+        self.weight = weight
+        self.next = None
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+
+    def append(self, vertex, weight):
+        new_node = Node(vertex, weight)
+        if self.head is None:
+            self.head = new_node
+        else:
+            current = self.head
+            while current.next:
+                current = current.next
+            current.next = new_node
+
+    def __iter__(self):
+        current = self.head
+        while current:
+            yield current.vertex, current.weight
+            current = current.next
+
+class Graph:
+    def __init__(self, num_vertices):
+        self.num_vertices = num_vertices
+        self.adjacency_list = [LinkedList() for _ in range(num_vertices)]
+
+    def add_edge(self, src, dest, weight):
+        self.adjacency_list[src].append(dest, weight)
+        self.adjacency_list[dest].append(src, weight)
+
+def convert_to_adjacency_list(weight_matrix):
+    graph = Graph(NUM_VERTICES)
+    for i in range(NUM_VERTICES):
+        for j in range(NUM_VERTICES):
+            if weight_matrix[i][j] != 0:
+                graph.add_edge(i, j, weight_matrix[i][j])
+    return graph
+
 def calculate_min_spanning_tree_weight(min_spanning_tree, weight_matrix):
     total_weight = 0
     for edge in min_spanning_tree:
@@ -184,16 +228,18 @@ def prim_algorithm(weight_matrix):
     start_vertex = 0
     visited[start_vertex] = True
 
+    graph = convert_to_adjacency_list(weight_matrix)
+    positions = calculate_positions(NUM_VERTICES, 150)
+
     while len(min_spanning_tree) < num_vertices - 1:
         min_weight = float('inf')
         min_edge = None
-        positions = calculate_positions(NUM_VERTICES, 150)
 
         for i in range(num_vertices):
             if visited[i]:
-                for j in range(num_vertices):
-                    if not visited[j] and 0 < weight_matrix[i][j] < min_weight:
-                        min_weight = weight_matrix[i][j]
+                for j, weight in graph.adjacency_list[i]:
+                    if not visited[j] and 0 < weight < min_weight:
+                        min_weight = weight
                         min_edge = (i, j)
 
         if min_edge:
@@ -210,14 +256,13 @@ def main():
     wn = turtle.Screen()
     wn.title("Graphs")
     wn.bgcolor("white")
-    wn.setup(width=800, height=600)
+    wn.setup(width=800, height=650)
     turtle.speed("fastest")
 
     undirected_matrix = make_undirected_matrix()
-
     weight_matrix = make_weight_matrix()
-
     draw_graph(undirected_matrix)
+    drawn_edges.clear()
 
     min_spanning_tree = prim_algorithm(weight_matrix)
     min_spanning_tree_weight = calculate_min_spanning_tree_weight(min_spanning_tree, weight_matrix)

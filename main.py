@@ -167,7 +167,7 @@ def make_weight_matrix():
 
     print("\nMatrix W:")
     for row in w_matrix:
-        print(row)
+        print(" ".join(f"{val:3}" for val in row))
     return w_matrix
 
 class Node:
@@ -245,10 +245,12 @@ def prim_algorithm(weight_matrix):
         if min_edge:
             min_spanning_tree.append(min_edge)
             visited[min_edge[1]] = True
-            turtle.width(5)
+            turtle.width(4)
             drawn_edges.clear()
             keyboard.wait('space')
-            draw_edge(positions[min_edge[0]][0], positions[min_edge[0]][1], positions[min_edge[1]][0], positions[min_edge[1]][1], min_edge[0], min_edge[1], weight_matrix[min_edge[0]][min_edge[1]])
+            draw_edge(positions[min_edge[0]][0], positions[min_edge[0]][1], positions[min_edge[1]][0],
+                      positions[min_edge[1]][1], min_edge[0], min_edge[1], weight_matrix[min_edge[0]][min_edge[1]])
+            print(f'Додано ребро {min_edge[0]}, {min_edge[1]} з вагою {weight_matrix[min_edge[0]][min_edge[1]]}')
 
     return min_spanning_tree
 
@@ -270,6 +272,13 @@ def main():
     print("Minimum Spanning Tree:")
     print(min_spanning_tree)
     print("Total weight of the minimum spanning tree:", min_spanning_tree_weight)
+
+    print("\nAll Edges with Weights:")
+    for i in range(NUM_VERTICES):
+        for j in range(i, NUM_VERTICES):
+            if undirected_matrix[i][j] == 1:
+                print(f"Edge ({i}, {j}) with weight {weight_matrix[i][j]}")
+
     turtle.hideturtle()
     turtle.done()
 

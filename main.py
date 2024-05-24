@@ -70,7 +70,7 @@ def loop(x1, y1):
     turtle.circle(15)
     turtle.penup()
 
-def draw_bent_edge(x1, y1, x2, y2):
+def draw_bent_edge(x1, y1, x2, y2, weight):
     turtle.goto(x1, y1)
     mid_x = (x1 + x2) / 2
     mid_y = (y1 + y2) / 2
@@ -86,14 +86,21 @@ def draw_bent_edge(x1, y1, x2, y2):
     turtle.setheading(math.degrees(angle))
     turtle.forward(distance - 20)
     turtle.penup()
+    if weight:
+        turtle.penup()
+        turtle.goto(bent_x, bent_y)
+        turtle.color('Dark blue')
+        turtle.write(weight, align="center", font=("Arial", 16, "normal"))
+        turtle.penup()
+        turtle.color('Magenta')
 
-def diff_edge(x1, y1, x2, y2, i, j):
-    if i - j == 1 or j - i == 1:
-        draw_normal_edge(x1, y1, x2, y2)
+def diff_edge(x1, y1, x2, y2, i, j, weight):
+    if i - j == 1 or j - i == 1 or i - j == 11 or j - i == 11:
+        draw_normal_edge(x1, y1, x2, y2, weight)
     else:
-        draw_bent_edge(x1, y1, x2, y2)
+        draw_bent_edge(x1, y1, x2, y2, weight)
 
-def draw_normal_edge(x1, y1, x2, y2):
+def draw_normal_edge(x1, y1, x2, y2, weight):
     angle = math.atan2(y2 - y1, x2 - x1)
     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     turtle.setheading(math.degrees(angle))
@@ -101,21 +108,19 @@ def draw_normal_edge(x1, y1, x2, y2):
     turtle.pendown()
     turtle.forward(distance - 40)
     turtle.penup()
-
-def draw_edge(x1, y1, x2, y2, i, j, weight):
     if weight:
         mid_x = (((x1 + x2) / 2) + x1) / 2
         mid_y = (((y1 + y2) / 2) + y1) / 2
         turtle.penup()
-        turtle.goto(mid_x, mid_y)
+        turtle.goto(mid_x-9, mid_y)
         turtle.color('Dark blue')
         turtle.write(weight, align="center", font=("Arial", 16, "normal"))
         turtle.penup()
         turtle.color('Magenta')
 
+def draw_edge(x1, y1, x2, y2, i, j, weight):
     if (i, j) in drawn_edges or (j, i) in drawn_edges:
         return
-
     drawn_edges.add((i, j))
 
     turtle.goto(x1, y1)
@@ -124,9 +129,9 @@ def draw_edge(x1, y1, x2, y2, i, j, weight):
         if i == j:
             loop(x1, y1)
         else:
-            diff_edge(x1, y1, x2, y2, i, j)
+            diff_edge(x1, y1, x2, y2, i, j, weight)
     else:
-        draw_normal_edge(x1, y1, x2, y2)
+        draw_normal_edge(x1, y1, x2, y2, weight)
 
 def calculate_positions(num_vertices, distance):
     positions = []
@@ -168,6 +173,7 @@ def make_weight_matrix():
     print("\nMatrix W:")
     for row in w_matrix:
         print(" ".join(f"{val:3}" for val in row))
+    print('\n')
     return w_matrix
 
 class Node:
@@ -246,11 +252,12 @@ def prim_algorithm(weight_matrix):
             min_spanning_tree.append(min_edge)
             visited[min_edge[1]] = True
             turtle.width(4)
+            turtle.color('Magenta')
             drawn_edges.clear()
             keyboard.wait('space')
             draw_edge(positions[min_edge[0]][0], positions[min_edge[0]][1], positions[min_edge[1]][0],
                       positions[min_edge[1]][1], min_edge[0], min_edge[1], weight_matrix[min_edge[0]][min_edge[1]])
-            print(f'Додано ребро {min_edge[0]}, {min_edge[1]} з вагою {weight_matrix[min_edge[0]][min_edge[1]]}')
+            print(f'Add edge ({min_edge[0]}, {min_edge[1]}) with weight {weight_matrix[min_edge[0]][min_edge[1]]}')
 
     return min_spanning_tree
 
@@ -269,15 +276,23 @@ def main():
     min_spanning_tree = prim_algorithm(weight_matrix)
     min_spanning_tree_weight = calculate_min_spanning_tree_weight(min_spanning_tree, weight_matrix)
 
-    print("Minimum Spanning Tree:")
+    print("\nMinimum Spanning Tree:")
     print(min_spanning_tree)
-    print("Total weight of the minimum spanning tree:", min_spanning_tree_weight)
+    print("\nTotal weight of the minimum spanning tree:", min_spanning_tree_weight)
 
     print("\nAll Edges with Weights:")
+    all_edges = []
     for i in range(NUM_VERTICES):
         for j in range(i, NUM_VERTICES):
             if undirected_matrix[i][j] == 1:
+                all_edges.append((i, j, weight_matrix[i][j]))
                 print(f"Edge ({i}, {j}) with weight {weight_matrix[i][j]}")
+
+    all_edges.sort(key=lambda x: x[2])
+
+    print("\nSorted Edges by Weight:")
+    for edge in all_edges:
+        print(f"Edge ({edge[0]}, {edge[1]}) with weight {edge[2]}")
 
     turtle.hideturtle()
     turtle.done()

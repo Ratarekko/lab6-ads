@@ -58,12 +58,14 @@ def draw_vertex(x, y, number):
 
 
 def loop(x1, y1):
-    if x1 == -225 and y1 == 225:
-        turtle.goto(x1 - 35, y1 + 15)
-    elif x1 == -225 and y1 != 225:
+    if x1 == -225:
         turtle.goto(x1 - 35, y1 + 15)
     elif y1 == -225:
         turtle.goto(x1, y1 - 20)
+    elif x1 == 225:
+        turtle.goto(x1 + 35, y1 + 15)
+    elif y1 == 225:
+        turtle.goto(x1, y1 + 20)
 
     turtle.setheading(180)
     turtle.pendown()
